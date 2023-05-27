@@ -25,7 +25,7 @@ namespace preAplicacion.Controladores
         {
             int result = this.usuarioServices.Agregar();
 
-            if(result == 0)
+            if(result == 1)
             {
                 this.usuarioView.Agregar();
             }
@@ -35,15 +35,20 @@ namespace preAplicacion.Controladores
             }
         }
 
+        public void MostrarUsuariosAgregados()
+        {
+            this.usuarioServices.MostrarUsuarioAgregado();
+        }
+
         public void Eliminar()
         {
             int result = this.usuarioServices.Eliminar();
 
-            if(result == 0)
+            if(result == 1)
             {
                 this.usuarioView.Eliminar();
             }
-            else if(result == 1)
+            else if(result == 2)
             {
                 this.usuarioView.NoEliminar();
             }

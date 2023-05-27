@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data.SqlClient;
 
 namespace preAplicacion.Servicios
 {
@@ -11,22 +12,23 @@ namespace preAplicacion.Servicios
     {
         private Usuario usuario;
 
-        public int cedula;
+        int retorno = 0;
+
 
         //Usuario diccionario
-        Dictionary<int, string> nombres = new Dictionary<int, string>();
-        Dictionary<int, string> apellidos = new Dictionary<int, string>();
-        Dictionary<int, string> contraseñas = new Dictionary<int, string>();
-        Dictionary<int, string> direcciones = new Dictionary<int, string>();
-        Dictionary<int, string> telefonos = new Dictionary<int, string>();
-        Dictionary<int, string> emails = new Dictionary<int, string>();
+        //Dictionary<int, string> nombres = new Dictionary<int, string>();
+        //Dictionary<int, string> apellidos = new Dictionary<int, string>();
+        //Dictionary<int, string> contraseñas = new Dictionary<int, string>();
+        //Dictionary<int, string> direcciones = new Dictionary<int, string>();
+        //Dictionary<int, string> telefonos = new Dictionary<int, string>();
+        //Dictionary<int, string> emails = new Dictionary<int, string>();
 
         public int Agregar()
         {
             //Crear usuario
 
             Console.WriteLine("Ingresa el numero de identificacion del usuario: ");
-            cedula = Int32.Parse(Console.ReadLine());
+            int cedula = Int32.Parse(Console.ReadLine());
             Console.WriteLine("Ingresa los nombres del usuario: ");
             string nombre = Console.ReadLine();
             Console.WriteLine("Ingresa los apellidos del usuario: ");
@@ -42,20 +44,51 @@ namespace preAplicacion.Servicios
 
 
             usuario = new Usuario(cedula, nombre, apellido, contraseña, direccion, telefono, email);
+ 
+            
 
-            nombres.Add(cedula, usuario.Nombres);
-            apellidos.Add(cedula, usuario.Apellidos);
-            contraseñas.Add(cedula, usuario.Contraseña);
-            direcciones.Add(cedula, usuario.Direccion);
-            telefonos.Add(cedula, usuario.Telefono);
-            emails.Add(cedula, usuario.Email);
+            using (SqlConnection Conect = Conexion.ConectarBD())
+            {
+                
+                SqlCommand comando = new SqlCommand(string.Format("INSERT INTO Usuarios (Cedula, Nombres, Apellidos, Contraseñas, Direccion, Telefonos, Emails) values ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}')", 
+                   cedula, nombre, apellido, contraseña, direccion, telefono, email), Conect);
 
-            return 0;
+                retorno = comando.ExecuteNonQuery();
+                Conect.Close();
+            }
+
+            return retorno;
+
+            //nombres.Add(cedula, usuario.Nombres);
+            //apellidos.Add(cedula, usuario.Apellidos);
+            //contraseñas.Add(cedula, usuario.Contraseña);
+            //direcciones.Add(cedula, usuario.Direccion);
+            //telefonos.Add(cedula, usuario.Telefono);
+            //emails.Add(cedula, usuario.Email);
         }
 
         public void MostrarUsuarioAgregado()
         {
-            Console.WriteLine("Nombre: " + nombres[cedula] + " " + apellidos[cedula] + "\nContraseña: " + contraseñas[cedula] + "\nDireccion: " + direcciones[cedula] + "\nTelefono: " + telefonos[cedula] + "\nEmail: " + emails[cedula]);
+            using (SqlConnection Conect = Conexion.ConectarBD())
+            {
+                string cadena = "SELECT * FROM Usuarios";
+                try
+                {
+                    SqlCommand comando = new SqlCommand(cadena, Conect);
+                    SqlDataReader lector = comando.ExecuteReader();
+                    while (lector.Read())
+                    {
+                        Console.WriteLine(lector.GetValue(0).ToString() + " " + lector.GetValue(1).ToString() + " " + lector.GetValue(2).ToString() + " " + lector.GetValue(3).ToString() + " " + lector.GetValue(4).ToString() + " " + lector.GetValue(5).ToString() + " " + lector.GetValue(6).ToString());
+                    }
+
+                    Conect.Close();
+                }
+                catch
+                {
+                    Console.WriteLine("Error al ejecutar la consulta");
+                }
+            }
+            
         }
 
         public int Eliminar()
@@ -63,30 +96,36 @@ namespace preAplicacion.Servicios
             Console.WriteLine("Ingrese el numero de cedula del usuario que desea eliminar: ");
             int idUsuario = Int32.Parse(Console.ReadLine());
 
-            Console.WriteLine("Se eliminara el siguiente usuario: " + "\nNombre: " + nombres[idUsuario] + " " + apellidos[idUsuario] + "\nContraseña: " + contraseñas[idUsuario] + "\nDireccion: " + direcciones[idUsuario] + "\nTelefono: " + telefonos[idUsuario] + "\nEmail: " + emails[idUsuario]);
-
             Console.WriteLine("\nDesea continuar?  1. Si 2. No");
             int option = Int32.Parse(Console.ReadLine());
 
             switch(option)
             {
                 case 1:
-                    nombres.Remove(idUsuario);
-                    apellidos.Remove(idUsuario);
-                    contraseñas.Remove(idUsuario);
-                    direcciones.Remove(idUsuario);
-                    telefonos.Remove(idUsuario);
-                    emails.Remove(idUsuario);
+                    using (SqlConnection Conect = Conexion.ConectarBD())
+                    {
 
-                    return 0;
+                        SqlCommand comando = new SqlCommand(string.Format("DELETE FROM Usuarios WHERE Cedula = {0}", idUsuario), Conect);
+
+                        retorno = comando.ExecuteNonQuery();
+                        Conect.Close();
+                    }
+                    //nombres.Remove(idUsuario);
+                    //apellidos.Remove(idUsuario);
+                    //contraseñas.Remove(idUsuario);
+                    //direcciones.Remove(idUsuario);
+                    //telefonos.Remove(idUsuario);
+                    //emails.Remove(idUsuario);
+
+                    return retorno;
 
                 case 2:
 
-                    return 1;
+                    return 2;
 
                 default:
 
-                    return 2;
+                    return 1;
             }
 
             
